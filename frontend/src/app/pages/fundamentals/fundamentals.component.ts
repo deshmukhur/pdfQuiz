@@ -143,8 +143,8 @@ export class FundamentalsComponent implements OnInit {
     }
     this.filteredData = [...this.filteredData].sort((a, b) => {
       const isAsc = sort.direction === 'asc';
-      const aVal = (a as Record<string, unknown>)[sort.active] as number;
-      const bVal = (b as Record<string, unknown>)[sort.active] as number;
+      const aVal = (a as unknown as Record<string, unknown>)[sort.active] as number;
+      const bVal = (b as unknown as Record<string, unknown>)[sort.active] as number;
       return ((aVal ?? 0) - (bVal ?? 0)) * (isAsc ? 1 : -1);
     });
   }

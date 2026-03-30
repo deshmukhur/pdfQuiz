@@ -17,9 +17,11 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.triggers.cron import CronTrigger
 
+from sqlalchemy import text
+
 from app.config import settings
 from app.database import async_session_factory, init_db
-from app.scanner import run_scan_cycle
+from app.scanner import run_scan_cycle, run_initial_scan, NIFTY_50_SYMBOLS, seed_instruments
 from app.news_fetcher import fetch_all_news
 from app.fundamental_fetcher import fetch_all_fundamentals
 
@@ -149,6 +151,25 @@ async def lifespan(app: FastAPI):
         logger.info("Database initialized")
     except Exception as e:
         logger.error(f"Database init error: {e}")
+
+    # Seed NIFTY 50 instruments if not already present
+    try:
+        async with async_session_factory() as session:
+            await seed_instruments(session)
+        logger.info("Instruments seeded")
+    except Exception as e:
+        logger.error(f"Instrument seeding error: {e}")
+
+    # Run initial scan on startup (bypasses market hours check)
+    try:
+        async with async_session_factory() as session:
+            await run_initial_scan(session)
+        logger.info("Initial scan complete")
+    except Exception as e:
+        logger.error(f"Initial scan error: {e}")
+
+    # Fetch news immediately on startup
+    asyncio.create_task(scheduled_news())
 
     # Start scheduler
     scheduler.add_job(

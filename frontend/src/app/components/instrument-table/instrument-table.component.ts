@@ -156,8 +156,8 @@ export class InstrumentTableComponent {
     }
     this.sortedData = [...this.data].sort((a, b) => {
       const isAsc = sort.direction === 'asc';
-      const aVal = (a as Record<string, unknown>)[sort.active];
-      const bVal = (b as Record<string, unknown>)[sort.active];
+      const aVal = (a as unknown as Record<string, unknown>)[sort.active];
+      const bVal = (b as unknown as Record<string, unknown>)[sort.active];
       if (typeof aVal === 'number' && typeof bVal === 'number') {
         return (aVal - bVal) * (isAsc ? 1 : -1);
       }
